@@ -186,17 +186,6 @@ jobs:
             ./x-ui-linux-${{ matrix.platform }}.tar.gz
             ./x-ui-linux-${{ matrix.platform }}.tar.gz.sha256
 
-      - name: Upload files to GH release
-        uses: svenstaro/upload-release-action@v2
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
-        with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref_name }}
-          file: x-ui-linux-${{ matrix.platform }}.tar.gz*
-          file_glob: true
-          overwrite: true
-          prerelease: true
-
   # =================================
   #  Windows Build
   # =================================
@@ -322,16 +311,51 @@ jobs:
             ./x-ui-windows-amd64.zip
             ./x-ui-windows-amd64.zip.sha256
 
-      - name: Upload files to GH release
-        uses: svenstaro/upload-release-action@v2
-        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/')
+  # Publish a stable release only after every platform has finished. Keeping
+  # uploads in a draft prevents the updater from seeing a partial release.
+  publish-stable:
+    name: Publish stable release
+    needs: [build, build-windows]
+    if: startsWith(github.ref, 'refs/tags/v')
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    concurrency:
+      group: stable-release-${{ github.ref_name }}
+      cancel-in-progress: false
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      - name: Download all build artifacts
+        uses: actions/download-artifact@v8
         with:
-          repo_token: ${{ secrets.GITHUB_TOKEN }}
-          tag: ${{ github.ref_name }}
-          file: x-ui-windows-amd64.zip*
-          file_glob: true
-          overwrite: true
-          prerelease: true
+          path: stable-artifacts
+          merge-multiple: true
+
+      - name: Publish complete stable release
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          test "$TAG" = "v$(tr -d '\r\n' < internal/config/version)"
+          shopt -s nullglob
+          assets=(stable-artifacts/*.tar.gz stable-artifacts/*.zip stable-artifacts/*.sha256)
+          test "${#assets[@]}" -eq 16
+          (cd stable-artifacts && sha256sum --check *.sha256)
+
+          if gh release view "$TAG" >/dev/null 2>&1; then
+            if [[ "$(gh release view "$TAG" --json isDraft --jq .isDraft)" != "true" ]]; then
+              echo "Release $TAG is already published; use a new version to replace binaries."
+              exit 1
+            fi
+          else
+            gh release create "$TAG" --draft --verify-tag --title "$TAG - Ichinose fork" \
+              --notes "Stable release of this fork. Removes project sponsor and donation content and uses Ichinose520122/3x-ui for installation and updates. Includes Linux and Windows builds with SHA-256 checksums."
+          fi
+          gh release upload "$TAG" "${assets[@]}" --clobber
+          gh release edit "$TAG" --draft=false --prerelease=false --latest
 
   # =================================
   #  Rolling dev channel (per-commit)
