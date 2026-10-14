@@ -8,13 +8,12 @@
 </p>
 
 <p align="center">
-  <a href="https://github.com/MHSanaei/3x-ui/releases"><img src="https://img.shields.io/github/v/release/mhsanaei/3x-ui" alt="Release"></a>
-  <a href="https://github.com/MHSanaei/3x-ui/actions"><img src="https://img.shields.io/github/actions/workflow/status/mhsanaei/3x-ui/release.yml.svg" alt="Build"></a>
-  <a href="#"><img src="https://img.shields.io/github/go-mod/go-version/mhsanaei/3x-ui.svg" alt="GO Version"></a>
-  <a href="https://github.com/MHSanaei/3x-ui/releases/latest"><img src="https://img.shields.io/github/downloads/mhsanaei/3x-ui/total.svg" alt="Downloads"></a>
+  <a href="https://github.com/Ichinose520122/3x-ui/releases"><img src="https://img.shields.io/github/v/release/Ichinose520122/3x-ui" alt="Release"></a>
+  <a href="https://github.com/Ichinose520122/3x-ui/actions"><img src="https://img.shields.io/github/actions/workflow/status/Ichinose520122/3x-ui/release.yml.svg" alt="Build"></a>
+  <a href="#"><img src="https://img.shields.io/github/go-mod/go-version/Ichinose520122/3x-ui.svg" alt="GO Version"></a>
+  <a href="https://github.com/Ichinose520122/3x-ui/releases/latest"><img src="https://img.shields.io/github/downloads/Ichinose520122/3x-ui/total.svg" alt="Downloads"></a>
   <a href="https://www.gnu.org/licenses/gpl-3.0.en.html"><img src="https://img.shields.io/badge/license-GPL%20V3-blue.svg?longCache=true" alt="License"></a>
-  <a href="https://pkg.go.dev/github.com/mhsanaei/3x-ui/v3"><img src="https://pkg.go.dev/badge/github.com/mhsanaei/3x-ui/v3.svg" alt="Go Reference"></a>
-  <a href="https://docs.sanaei.dev"><img src="https://img.shields.io/badge/docs-docs.sanaei.dev-22d3ee" alt="Documentation"></a>
+  <a href="https://github.com/Ichinose520122/3x-ui/tree/main/docs/content/docs/fa"><img src="https://img.shields.io/badge/docs-GitHub-22d3ee" alt="Documentation"></a>
 </p>
 
 **3X-UI** یک پنل کنترل وب پیشرفته و متن‌باز برای مدیریت سرورهای [Xray-core](https://github.com/XTLS/Xray-core) است. این پنل یک رابط کاربری تمیز و چندزبانه برای استقرار، پیکربندی و نظارت بر طیف گسترده‌ای از پروتکل‌های پراکسی و VPN ارائه می‌دهد — از یک VPS تکی تا استقرارهای چندنودی.
@@ -44,56 +43,32 @@
 - **‏۱۳ زبان رابط کاربری** با تم‌های تیره و روشن.
 - **یکپارچگی با Fail2ban** برای اعمال محدودیت IP به‌ازای هر کلاینت.
 
-## اسکرین‌شات‌ها
-
-<details>
-<summary>برای باز شدن کلیک کنید</summary>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./media/01-overview-dark.png">
-  <img alt="Overview" src="./media/01-overview-light.png">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./media/02-add-inbound-dark.png">
-  <img alt="Inbounds" src="./media/02-add-inbound-light.png">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./media/03-add-client-dark.png">
-  <img alt="Add client" src="./media/03-add-client-light.png">
-</picture>
-
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="./media/05-add-nodes-dark.png">
-  <img alt="Configs" src="./media/05-add-nodes-light.png">
-</picture>
-
-</details>
-
 ## شروع سریع
 
+> [!NOTE]
+> نصب و به‌روزرسانی این فورک فقط از بخش Releases همین مخزن انجام می‌شود. پیش از اجرای دستورها، نسخه موردنظر را در همین مخزن بسازید و منتشر کنید؛ فایل‌های انتشار بالادستی خودکار کپی نمی‌شوند. تصویر Docker نیز باید در این فورک منتشر شود.
+
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh)
+bash <(curl -Ls https://raw.githubusercontent.com/Ichinose520122/3x-ui/main/install.sh)
 ```
 
 برای نصب یک نسخه‌ی مشخص، تگ آن را در انتها اضافه کنید (مثلاً `v3.7.0`):
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) v3.7.0
+bash <(curl -Ls https://raw.githubusercontent.com/Ichinose520122/3x-ui/main/install.sh) v3.7.0
 ```
 
 برای نصب نسخه‌ی غلتانِ **dev** (آخرین پیش‌انتشار به‌ازای هر کامیت از شاخه‌ی `main`، نه یک انتشار پایدار)، مقدار `dev-latest` را پاس دهید:
 
 ```bash
-bash <(curl -Ls https://raw.githubusercontent.com/mhsanaei/3x-ui/master/install.sh) dev-latest
+bash <(curl -Ls https://raw.githubusercontent.com/Ichinose520122/3x-ui/main/install.sh) dev-latest
 ```
 
 در حین نصب، یک نام کاربری، رمز عبور و مسیر دسترسی تصادفی تولید می‌شود. پس از نصب، دستور `x-ui` را اجرا کنید تا منوی مدیریت باز شود؛ در آنجا می‌توانید سرویس را شروع/متوقف کنید، اطلاعات ورود خود را ببینید یا بازنشانی کنید، گواهی‌های SSL را مدیریت کنید و کارهای دیگری انجام دهید.
 
 هر فایل انتشار به‌همراه یک جمع کنترلی `.sha256` در کنارش منتشر می‌شود. هم `install.sh` و هم به‌روزرسان، آرشیو را در برابر آن جمع کنترلی بررسی می‌کنند و در صورت عدم تطابق متوقف می‌شوند.
 
-برای مستندات کامل — نصب، پیکربندی، بهره‌برداری و مرجع کامل API — به **[docs.sanaei.dev](https://docs.sanaei.dev/fa)** مراجعه کنید.
+برای مستندات کامل — نصب، پیکربندی، بهره‌برداری و مرجع کامل API — به **[Documentation](https://github.com/Ichinose520122/3x-ui/tree/main/docs/content/docs/fa/fa)** مراجعه کنید.
 
 ### نصب بدون نظارت
 
@@ -146,7 +121,7 @@ docker compose --profile postgres up -d
 این ایمیج، Fail2ban را (که به‌صورت پیش‌فرض فعال است) برای اعمال **محدودیت‌های IP** به‌ازای هر کلاینت همراه دارد. ‏Fail2ban متخلفان را با `iptables` مسدود می‌کند که به مجوز `NET_ADMIN` نیاز دارد. فایل `docker-compose.yml` این مجوز را از قبل از طریق `cap_add` می‌دهد؛ اگر به‌جای آن کانتینر را با `docker run` اجرا می‌کنید، خودتان مجوزها را اضافه کنید، در غیر این صورت مسدودسازی‌ها فقط ثبت می‌شوند اما هرگز اعمال نمی‌شوند:
 
 ```bash
-docker run -d --cap-add=NET_ADMIN --cap-add=NET_RAW ... ghcr.io/mhsanaei/3x-ui
+docker run -d --cap-add=NET_ADMIN --cap-add=NET_RAW ... ghcr.io/ichinose520122/3x-ui
 ```
 
 ## متغیرهای محیطی
@@ -173,7 +148,7 @@ docker run -d --cap-add=NET_ADMIN --cap-add=NET_RAW ... ghcr.io/mhsanaei/3x-ui
 | `XUI_NODE_TOKEN_KEY_FILE` | حلقه‌کلید JSON (با دسترسی `0600`) شامل شناسه‌ی کلید فعال و کلیدهای ۳۲ بایتی base64 | `/etc/x-ui/node_token_key.json` |
 | `XUI_NODE_TOKEN_KEY` | یک کلید ۳۲ بایتی base64 که تنها در صورت بارگذاری‌نشدن فایل کلید استفاده می‌شود | — |
 
-فهرست کامل در [مرجع متغیرهای محیطی](https://docs.sanaei.dev/fa/docs/reference/env-vars) موجود است.
+فهرست کامل در [مرجع متغیرهای محیطی](https://github.com/Ichinose520122/3x-ui/tree/main/docs/content/docs/fa/fa/docs/reference/env-vars) موجود است.
 
 ## زبان‌های پشتیبانی‌شده
 
@@ -205,27 +180,18 @@ English · فارسی · العربية · 中文（简体） · 中文（繁體
 
 **اگر این پروژه برای شما مفید است، می‌توانید به آن یک**:star2: بدهید
 
-<a href="https://www.buymeacoffee.com/MHSanaei" target="_blank">
-<img src="./media/default-yellow.png" alt="Buy Me A Coffee" style="height: 70px !important;width: 277px !important;" >
-</a>
-
-</br>
-<a href="https://nowpayments.io/donation/hsanaei" target="_blank" rel="noreferrer noopener">
-   <img src="./media/donation-button-black.svg" alt="Crypto donation button by NOWPayments">
-</a>
-
 ## تاریخچه ستاره‌ها
 
-<a href="https://www.star-history.com/?repos=mhsanaei%2F3x-ui&type=date&legend=top-left">
+<a href="https://www.star-history.com/?repos=Ichinose520122%2F3x-ui&type=date&legend=top-left">
  <picture>
-   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=mhsanaei/3x-ui&type=date&theme=dark&legend=top-left" />
-   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=mhsanaei/3x-ui&type=date&legend=top-left" />
-   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=mhsanaei/3x-ui&type=date&legend=top-left" />
+   <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/chart?repos=Ichinose520122/3x-ui&type=date&theme=dark&legend=top-left" />
+   <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/chart?repos=Ichinose520122/3x-ui&type=date&legend=top-left" />
+   <img alt="Star History Chart" src="https://api.star-history.com/chart?repos=Ichinose520122/3x-ui&type=date&legend=top-left" />
  </picture>
 </a>
 
 <p align="center">
- <a href="https://www.star-history.com/mhsanaei/3x-ui">
-  <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=MHSanaei/3x-ui&type=rank&theme=dark" /><source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=MHSanaei/3x-ui&type=rank" /><img alt="Star History Rank" src="https://api.star-history.com/badge?repo=MHSanaei/3x-ui&type=rank" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=MHSanaei/3x-ui&type=trending&theme=dark" /><source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=MHSanaei/3x-ui&type=trending" /><img alt="GitHub Trending Repository of the Day" src="https://api.star-history.com/badge?repo=MHSanaei/3x-ui&type=trending" /></picture>
+ <a href="https://www.star-history.com/Ichinose520122/3x-ui">
+  <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=Ichinose520122/3x-ui&type=rank&theme=dark" /><source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=Ichinose520122/3x-ui&type=rank" /><img alt="Star History Rank" src="https://api.star-history.com/badge?repo=Ichinose520122/3x-ui&type=rank" /></picture> <picture><source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/badge?repo=Ichinose520122/3x-ui&type=trending&theme=dark" /><source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/badge?repo=Ichinose520122/3x-ui&type=trending" /><img alt="GitHub Trending Repository of the Day" src="https://api.star-history.com/badge?repo=Ichinose520122/3x-ui&type=trending" /></picture>
  </a>
 </p>

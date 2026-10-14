@@ -1,16 +1,8 @@
 import type { BaseLayoutProps } from 'fumadocs-ui/layouts/shared';
-import { Heart } from 'lucide-react';
 import { Logo } from '@/components/logo';
 import { TelegramIcon } from '@/components/icons';
 import { DocsThemeSwitch } from '@/components/theme-switch';
-import {
-  appName,
-  productRepoUrl,
-  telegramChannel,
-  telegramChannelUrl,
-  donateUrl,
-  siteUrl,
-} from './shared';
+import { appName, productRepoUrl, telegramChannel, telegramChannelUrl, siteUrl } from './shared';
 import { getSiteMessages } from './site-i18n';
 
 // Build locale-aware shared layout options. With `hideLocale: 'default-locale'`,
@@ -51,25 +43,6 @@ export function baseOptions(lang: string): BaseLayoutProps {
         icon: <TelegramIcon />,
         text: 'Telegram',
         url: telegramChannelUrl,
-        external: true,
-      },
-      // Compact heart icon in the top nav bars (home + docs).
-      {
-        type: 'icon',
-        on: 'nav',
-        label: m.donate,
-        icon: <Heart />,
-        text: m.donate,
-        url: donateUrl,
-        external: true,
-      },
-      // Prominent labelled entry in the docs sidebar / mobile menu.
-      {
-        type: 'main',
-        on: 'menu',
-        icon: <Heart />,
-        text: m.donate,
-        url: donateUrl,
         external: true,
       },
     ],

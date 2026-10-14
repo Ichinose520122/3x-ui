@@ -211,9 +211,8 @@ via `import.meta.glob`.
 Reusable components in `src/components/` are developed and documented in
 **Storybook** (`@storybook/react-vite`). It is a component workbench, not part
 of the shipped panel — nothing here is embedded into the Go binary. The built
-Storybook is published with the docs site at
-[docs.sanaei.dev/storybook](https://docs.sanaei.dev/storybook/) by
-`.github/workflows/docs-deploy.yml`.
+Storybook can be published with this fork's docs site using
+[docs-deploy.yml](https://github.com/Ichinose520122/3x-ui/blob/main/.github/workflows/docs-deploy.yml).
 
 ```sh
 npm run storybook        # dev server on http://localhost:6006
