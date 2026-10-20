@@ -21,6 +21,22 @@ on:
       - ".github/workflows/release.yml"
 
 jobs:
+  verify:
+    name: Verify backend before publishing
+    permissions:
+      contents: read
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: go.mod
+          cache: true
+      - name: Stub embedded frontend for backend tests
+        run: mkdir -p internal/web/dist && touch internal/web/dist/.gitkeep
+      - name: Test updated backend and panel routes
+        run: go test -count=1 -timeout 10m ./internal/util/link ./internal/xray ./internal/mtproto ./internal/sub ./internal/web/service ./internal/web/service/panel ./internal/web/controller
+
   build:
     permissions:
       contents: write
@@ -99,6 +115,12 @@ jobs:
           LDFLAGS="-w -s -linkmode external -extldflags '-static'"
           if [[ "$GITHUB_REF" != refs/tags/* ]]; then
             LDFLAGS="$LDFLAGS -X github.com/mhsanaei/3x-ui/v3/internal/config.buildCommit=${GITHUB_SHA::8} -X github.com/mhsanaei/3x-ui/v3/internal/config.buildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          fi
+          # This fork retains upstream sponsor sources only to simplify merges.
+          # Fail closed if build flags ever include them in a release.
+          if go list -f '{{join .GoFiles "\n"}}' ./internal/web/service/panel | grep -q '^sponsor\.go$'; then
+            echo "Sponsor backend must not be compiled into fork releases" >&2
+            exit 1
           fi
           go build -buildvcs=true -ldflags "$LDFLAGS" -o xui-release -v .
           file xui-release
@@ -250,10 +272,21 @@ jobs:
           go version
           gcc --version
 
+          # Version info + manifest resource: a bare stripped Go exe scores high on AV heuristics.
+          PANEL_VERSION=$(tr -d '[:space:]' < internal/config/version)
+          go run github.com/tc-hib/go-winres@v0.3.3 make --arch amd64 \
+            --product-version "$PANEL_VERSION" --file-version "$PANEL_VERSION"
+
           # Stamp the commit into per-commit (dev channel) builds only.
           LDFLAGS="-w -s"
           if [[ "$GITHUB_REF" != refs/tags/* ]]; then
             LDFLAGS="$LDFLAGS -X github.com/mhsanaei/3x-ui/v3/internal/config.buildCommit=${GITHUB_SHA:0:8} -X github.com/mhsanaei/3x-ui/v3/internal/config.buildDate=$(date -u +%Y-%m-%dT%H:%M:%SZ)"
+          fi
+          # This fork retains upstream sponsor sources only to simplify merges.
+          # Fail closed if build flags ever include them in a release.
+          if go list -f '{{join .GoFiles "\n"}}' ./internal/web/service/panel | grep -q '^sponsor\.go$'; then
+            echo "Sponsor backend must not be compiled into fork releases" >&2
+            exit 1
           fi
           go build -buildvcs=true -ldflags "$LDFLAGS" -o xui-release.exe -v .
 
@@ -262,7 +295,7 @@ jobs:
         run: |
           $retry = @{ MaximumRetryCount = 5; RetryIntervalSec = 10 }
           mkdir x-ui
-          Copy-Item xui-release.exe x-ui\x-ui.exe
+          Copy-Item xui-release.exe x-ui\3x-ui.exe
           mkdir x-ui\bin
           cd x-ui\bin
 
@@ -315,7 +348,7 @@ jobs:
   # uploads in a draft prevents the updater from seeing a partial release.
   publish-stable:
     name: Publish stable release
-    needs: [build, build-windows]
+    needs: [build, build-windows, verify]
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     permissions:
@@ -367,7 +400,7 @@ jobs:
   # channel is unaffected.
   publish-dev:
     name: Publish rolling dev release
-    needs: [build, build-windows]
+    needs: [build, build-windows, verify]
     if: (github.event_name == 'push' || github.event_name == 'workflow_dispatch') && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     permissions:
