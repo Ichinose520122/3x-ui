@@ -10,6 +10,7 @@ export const keys = {
   hosts: {
     root: () => ['hosts'] as const,
     list: () => ['hosts', 'list'] as const,
+    raw: () => ['hosts', 'raw'] as const,
     byInbound: (inboundId: number) => ['hosts', 'byInbound', inboundId] as const,
     tags: () => ['hosts', 'tags'] as const,
   },
@@ -27,6 +28,7 @@ export const keys = {
     root: () => ['inbounds'] as const,
     slim: () => ['inbounds', 'slim'] as const,
     options: () => ['inbounds', 'options'] as const,
+    amneziawgKernelReadiness: () => ['inbounds', 'amneziawgKernelReadiness'] as const,
   },
   clients: {
     root: () => ['clients'] as const,
