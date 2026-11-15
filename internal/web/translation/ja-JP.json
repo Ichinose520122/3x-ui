@@ -564,6 +564,8 @@
         "visionTestseed": "Vision testseed",
         "version": "バージョン",
         "udpIdleTimeout": "UDP idle timeout (秒)",
+        "manageHy2HopPorts": "UDP 転送を自動管理",
+        "manageHy2HopPortsHint": "3x-ui の起動時にホッピングポートの転送ルールを復元します。Linux ノードに nftables が必要です。",
         "masquerade": "Masquerade",
         "type": "種類",
         "upstreamUrl": "Upstream URL",

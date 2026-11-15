@@ -69,6 +69,20 @@ icon: ArrowDownToLine
   协议，面板会为它生成 `hysteria2://` 分享链接。
 </Callout>
 
+## Hysteria2 端口跳跃
+
+编辑 Hysteria2 入站，在 **FinalMask → QUIC Params → UDP Hop** 填写 **Hop Ports**，例如 `20000-20100,20200`。开启 **自动管理 UDP 转发** 后保存。节点上的 3x-ui 会将这些 UDP 端口转发到入站监听端口，并在启动时根据已保存的设置恢复规则。修改范围、关闭开关、停用或删除入站时，面板会同步更新规则。此开关默认关闭。
+
+节点须运行支持 nftables NAT 和 socket 匹配的 Linux 内核，且 3x-ui 须拥有 `CAP_NET_ADMIN`。Debian 12 及以上版本可使用 `sudo apt install nftables` 安装 `nft`。使用多节点时，主面板和承载入站的节点都须升级到支持此功能的版本。
+
+在 Docker 桥接网络中，需发布监听端口和跳跃范围的 UDP 端口。云防火墙或安全组也应放行这些 UDP 端口。启用前，请将跳跃范围保留给此入站，并停用针对同一范围的手工转发脚本或服务。
+
+查看面板管理的规则及计数器：
+
+```sh
+sudo nft list table inet xui_hy2_hop
+```
+
 ## 回落——在同一端口上服务多种协议
 
 回落（fallback）让单个 TLS 端口（例如 `443`）可以服务不止一种协议——例如同时服务

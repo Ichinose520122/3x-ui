@@ -513,6 +513,8 @@
         "visionTestseed": "Vision testseed",
         "version": "版本",
         "udpIdleTimeout": "UDP 閒置逾時 (s)",
+        "manageHy2HopPorts": "自動管理 UDP 轉送",
+        "manageHy2HopPortsHint": "節點上的 3x-ui 啟動時恢復跳躍連接埠的轉送規則。該節點須使用 Linux 並安裝 nftables。",
         "masquerade": "偽裝",
         "type": "類型",
         "upstreamUrl": "Upstream URL",

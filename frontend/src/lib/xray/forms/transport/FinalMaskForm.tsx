@@ -369,6 +369,7 @@ export default function FinalMaskForm({
               base={[...base, 'quicParams']}
               form={form}
               showUdpHop={side === 'server'}
+              allowServerPortManagement={side === 'server' && isHysteria}
             />
           )}
         </>
@@ -906,8 +907,7 @@ const REUSE_HINT = 'Writes the bytes an earlier item captured under this name';
 const TRANSFORM_HINT =
   'An expression tree, e.g. {"op": "concat", "args": [{"type": "str", "bytes": "OK "}, {"reuse": "nonce"}]}';
 const CAPTURE_HINT = 'Saves the bytes this item writes or reads under a name later items can reuse';
-const UDP_HOP_HINT =
-  'Advertised to clients as a hop range; the server listens on its own port only';
+const UDP_HOP_HINT = 'Clients receive the hop range. The server listens on the inbound port.';
 
 function HeaderCustomGroups({
   tcpFieldName,
@@ -2084,11 +2084,14 @@ function QuicParamsForm({
   base,
   form,
   showUdpHop,
+  allowServerPortManagement,
 }: {
   base: (string | number)[];
   form: FormInstance;
   showUdpHop: boolean;
+  allowServerPortManagement: boolean;
 }) {
+  const { t } = useTranslation();
   const uid = useId();
   const congestion = Form.useWatch([...base, 'congestion'], form) as string | undefined;
   const udpHop = Form.useWatch([...base, 'udpHop'], { form, preserve: true }) as
@@ -2143,8 +2146,6 @@ function QuicParamsForm({
         </>
       )}
 
-      {/* Advertised to clients (link mport, JSON-subscription udphop mask); the server
-          itself listens on its own port. */}
       {showUdpHop && (
         <>
           <Form.Item htmlFor={`${uid}-udp-hop`} label="UDP Hop" tooltip={UDP_HOP_HINT}>
@@ -2168,6 +2169,17 @@ function QuicParamsForm({
               <Form.Item label="Hop Interval (s)" name={[...base, 'udpHop', 'interval']}>
                 <Input placeholder="e.g. 5-10" />
               </Form.Item>
+              {allowServerPortManagement && (
+                <Form.Item
+                  htmlFor={`${uid}-manage-hy2-hop-ports`}
+                  label={t('pages.inbounds.form.manageHy2HopPorts')}
+                  tooltip={t('pages.inbounds.form.manageHy2HopPortsHint')}
+                  name={[...base, 'udpHop', 'manageServerPorts']}
+                  valuePropName="checked"
+                >
+                  <Switch id={`${uid}-manage-hy2-hop-ports`} />
+                </Form.Item>
+              )}
             </>
           )}
         </>

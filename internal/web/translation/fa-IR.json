@@ -513,6 +513,8 @@
         "visionTestseed": "Vision testseed",
         "version": "نسخه",
         "udpIdleTimeout": "UDP idle timeout (s)",
+        "manageHy2HopPorts": "مدیریت خودکار هدایت UDP",
+        "manageHy2HopPortsHint": "هنگام راه‌اندازی 3x-ui، قوانین هدایت پورت‌های پرش بازیابی می‌شوند. نصب nftables روی گره لینوکس ضروری است.",
         "masquerade": "استتار",
         "type": "نوع",
         "upstreamUrl": "آدرس Upstream",

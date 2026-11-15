@@ -1285,6 +1285,9 @@ func (s *InboundService) AddInbound(inbound *model.Inbound) (*model.Inbound, boo
 	inbound.TrafficResetDay = normalizeTrafficResetDay(inbound.TrafficResetDay)
 	// Normalize streamSettings based on protocol
 	s.normalizeStreamSettings(inbound)
+	if err := validateHysteriaHop(inbound); err != nil {
+		return inbound, false, err
+	}
 	if !s.FromNodeSync {
 		if err := validateInboundTLSCertificates(inbound.StreamSettings); err != nil {
 			return inbound, false, err
@@ -1844,19 +1847,31 @@ func (s *InboundService) SetInboundEnable(id int, enable bool) (bool, error) {
 		return false, nil
 	}
 
-	db := database.GetDB()
-	// Enabling puts this row's ports into the running config, and the guards ran
-	// only if it was saved: a restored or hand-edited row reaches it unchecked.
-	if enable && inbound.NodeID == nil {
-		conflict, err := checkPortConflictTx(db, inbound, inbound.Id)
-		if err != nil {
+	if enable {
+		candidate := *inbound
+		candidate.Enable = true
+		if err := validateHysteriaHop(&candidate); err != nil {
 			return false, err
 		}
-		if conflict != nil {
-			return false, common.NewError(conflict.String())
-		}
 	}
-	if err := db.Transaction(func(tx *gorm.DB) error {
+	if err := runSerializedTx(func(tx *gorm.DB) error {
+		if err := tx.First(inbound, id).Error; err != nil {
+			return err
+		}
+		// Check committed listeners and reserve the range in the same writer transaction.
+		if enable {
+			check := checkPortConflictTx
+			if inbound.NodeID != nil {
+				check = checkHysteriaHopConflictTx
+			}
+			conflict, err := check(tx, inbound, inbound.Id)
+			if err != nil {
+				return err
+			}
+			if conflict != nil {
+				return common.NewError(conflict.String())
+			}
+		}
 		if err := tx.Model(model.Inbound{}).Where("id = ?", id).
 			Update("enable", enable).Error; err != nil {
 			return err
@@ -1907,7 +1922,7 @@ func (s *InboundService) SetInboundEnable(id int, enable bool) (bool, error) {
 		return needRestart, nil
 	}
 
-	runtimeInbound, err := s.buildInboundForLocalRuntime(db, inbound)
+	runtimeInbound, err := s.buildInboundForLocalRuntime(database.GetDB(), inbound)
 	if err != nil {
 		logger.Debug("SetInboundEnable: build runtime config failed:", err)
 		return true, nil
@@ -1999,6 +2014,13 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 	// Restore the stored NodeID before any host-scoped check so a node inbound
 	// stays scoped to its own node (the payload's nodeId is unreliable, often absent).
 	inbound.NodeID = oldInbound.NodeID
+	hopCandidate := *inbound
+	if !s.FromNodeSync {
+		hopCandidate.Enable = oldInbound.Enable
+	}
+	if err := validateHysteriaHop(&hopCandidate); err != nil {
+		return inbound, false, err
+	}
 	if err := normalizeTuicSettings(inbound); err != nil {
 		return inbound, false, err
 	}
@@ -2245,6 +2267,9 @@ func (s *InboundService) UpdateInbound(inbound *model.Inbound) (*model.Inbound, 
 				}
 				postCommitApply = func() {
 					if runningInbound != nil && applyInboundUserOps(rt, runningInbound, runtimeInbound) {
+						if hopSync, ok := rt.(interface{ RequestHysteriaHopSync(*model.Inbound) }); ok {
+							hopSync.RequestHysteriaHopSync(runtimeInbound)
+						}
 						logger.Debug("Inbound clients updated in place on", rt.Name(), ":", oldInbound.Tag)
 						return
 					}

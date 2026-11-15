@@ -42,6 +42,7 @@ RUN apk add --no-cache --update \
   ca-certificates \
   tzdata \
   fail2ban \
+  nftables \
   bash \
   curl \
   openssl

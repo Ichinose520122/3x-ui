@@ -513,6 +513,8 @@
         "visionTestseed": "Vision Testseed",
         "version": "Sürüm",
         "udpIdleTimeout": "UDP Idle Timeout (s)",
+        "manageHy2HopPorts": "UDP yönlendirmesini otomatik yönet",
+        "manageHy2HopPortsHint": "3x-ui başlarken atlama portlarının yönlendirmesi geri yüklenir. Linux düğümünde nftables gerekir.",
         "masquerade": "Gizleme (Masquerade)",
         "type": "Tip",
         "upstreamUrl": "Üst Sunucu URL (Upstream)",

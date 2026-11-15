@@ -564,6 +564,8 @@
         "visionTestseed": "Vision testseed",
         "version": "Versão",
         "udpIdleTimeout": "UDP idle timeout (s)",
+        "manageHy2HopPorts": "Gerenciar o encaminhamento UDP automaticamente",
+        "manageHy2HopPortsHint": "O 3x-ui restaura o encaminhamento das portas de salto ao iniciar. Requer nftables no nó Linux.",
         "masquerade": "Masquerade",
         "type": "Tipo",
         "upstreamUrl": "URL Upstream",

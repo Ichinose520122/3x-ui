@@ -166,7 +166,10 @@ func listenOverlaps(a, b bindAddr) bool {
 	if !okA || !okB {
 		return wildcardA || wildcardB
 	}
-	return (wildcardA || wildcardB) && familiesA&familiesB != 0
+	if wildcardA || wildcardB {
+		return familiesA&familiesB != 0
+	}
+	return net.ParseIP(a.listen).Equal(net.ParseIP(b.listen))
 }
 
 type addrFamily uint8
@@ -211,6 +214,7 @@ type portConflictDetail struct {
 	// reason for the conflict.
 	ForwardedBy string
 	Transports  transportBits
+	HysteriaHop bool
 }
 
 // String renders the detail as a single-line, user-facing summary.
@@ -238,6 +242,9 @@ func (d *portConflictDetail) String() string {
 	if d.ForwardedBy != "" {
 		return fmt.Sprintf("%s (%s) already forwarded on inbound %s on %s by its client %s",
 			port, transportTagSuffix(d.Transports), name, listen, d.ForwardedBy)
+	}
+	if d.HysteriaHop {
+		return fmt.Sprintf("%s (UDP) is already in the managed HY2 hop range of inbound %s on %s", port, name, listen)
 	}
 	return fmt.Sprintf("%s (%s) already used by inbound %s on %s",
 		port, transportTagSuffix(d.Transports), name, listen)
@@ -280,6 +287,11 @@ func (s *InboundService) checkPortConflict(inbound *model.Inbound, ignoreId int)
 
 func checkPortConflictTx(db *gorm.DB, inbound *model.Inbound, ignoreId int) (*portConflictDetail, error) {
 	newBits := inboundTransports(inbound.Protocol, inbound.StreamSettings, inbound.Settings)
+	if newBits&transportUDP != 0 {
+		if conflict, err := checkHysteriaHopConflictTx(db, inbound, ignoreId); conflict != nil || err != nil {
+			return conflict, err
+		}
+	}
 
 	// The internal Xray API inbound (tag "api", loopback TCP) isn't a DB row,
 	// so a local user inbound reusing its port would leave Xray binding the

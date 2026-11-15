@@ -563,6 +563,8 @@
         "visionTestseed": "Vision testseed",
         "version": "版本",
         "udpIdleTimeout": "UDP 空闲超时 (s)",
+        "manageHy2HopPorts": "自动管理 UDP 转发",
+        "manageHy2HopPortsHint": "节点上的 3x-ui 启动时恢复跳跃端口的转发规则。该节点须运行 Linux 并安装 nftables。",
         "masquerade": "伪装",
         "type": "类型",
         "upstreamUrl": "Upstream URL",

@@ -515,6 +515,8 @@
         "visionTestseed": "Vision testseed",
         "version": "Version",
         "udpIdleTimeout": "UDP idle timeout (s)",
+        "manageHy2HopPorts": "Manage UDP forwarding automatically",
+        "manageHy2HopPortsHint": "Restore forwarding for the hop ports on the Linux node when 3x-ui starts. Requires nftables on that node.",
         "masquerade": "Masquerade",
         "type": "Type",
         "upstreamUrl": "Upstream URL",

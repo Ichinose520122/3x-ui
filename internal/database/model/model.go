@@ -393,6 +393,7 @@ func (i *Inbound) GenXrayInboundConfig() *xray.InboundConfig {
 		if healed, ok := HealHysteriaStreamVersion(streamSettings); ok {
 			streamSettings = healed
 		}
+		streamSettings = stripHysteriaUDPHopFromListener(streamSettings)
 	}
 	return &xray.InboundConfig{
 		Listen:         json_util.RawMessage(listen),
@@ -403,6 +404,31 @@ func (i *Inbound) GenXrayInboundConfig() *xray.InboundConfig {
 		Tag:            i.Tag,
 		Sniffing:       json_util.RawMessage(i.Sniffing),
 	}
+}
+
+// stripHysteriaUDPHopFromListener keeps subscription and forwarding settings out of Xray's listener.
+func stripHysteriaUDPHopFromListener(streamSettings string) string {
+	var stream map[string]json.RawMessage
+	if json.Unmarshal([]byte(streamSettings), &stream) != nil {
+		return streamSettings
+	}
+	var finalMask, quicParams map[string]json.RawMessage
+	if json.Unmarshal(stream["finalmask"], &finalMask) != nil ||
+		json.Unmarshal(finalMask["quicParams"], &quicParams) != nil || quicParams["udpHop"] == nil {
+		return streamSettings
+	}
+	delete(quicParams, "udpHop")
+	if len(quicParams) == 0 {
+		delete(finalMask, "quicParams")
+	} else {
+		finalMask["quicParams"], _ = json.Marshal(quicParams)
+	}
+	stream["finalmask"], _ = json.Marshal(finalMask)
+	value, err := json.MarshalIndent(stream, "", "  ")
+	if err != nil {
+		return streamSettings
+	}
+	return string(value)
 }
 
 func StripVmessClientSecurity(settings string) (string, bool) {

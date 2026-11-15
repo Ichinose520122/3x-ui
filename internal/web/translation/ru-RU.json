@@ -566,6 +566,8 @@
         "visionTestseed": "Vision testseed",
         "version": "Версия",
         "udpIdleTimeout": "UDP idle timeout (с)",
+        "manageHy2HopPorts": "Автоматически управлять перенаправлением UDP",
+        "manageHy2HopPortsHint": "При запуске 3x-ui восстанавливает перенаправление портов для hopping. На узле Linux требуется nftables.",
         "masquerade": "Masquerade",
         "type": "Тип",
         "upstreamUrl": "Upstream URL",

@@ -515,6 +515,8 @@
         "visionTestseed": "Testovacia hodnota Vision (testseed)",
         "version": "Verzia",
         "udpIdleTimeout": "Časový limit nečinnosti UDP (s)",
+        "manageHy2HopPorts": "Automaticky spravovať presmerovanie UDP",
+        "manageHy2HopPortsHint": "Pri spustení 3x-ui sa obnoví presmerovanie portov používaných na preskakovanie. Uzol Linux vyžaduje nftables.",
         "masquerade": "Maskovanie servera",
         "type": "Typ",
         "upstreamUrl": "URL cieľového servera",

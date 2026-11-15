@@ -564,6 +564,8 @@
         "visionTestseed": "Vision testseed",
         "version": "Phiên bản",
         "udpIdleTimeout": "UDP idle timeout (s)",
+        "manageHy2HopPorts": "Tự động quản lý chuyển tiếp UDP",
+        "manageHy2HopPortsHint": "3x-ui khôi phục quy tắc chuyển tiếp cổng nhảy khi khởi động. Nút Linux cần cài nftables.",
         "masquerade": "Masquerade",
         "type": "Loại",
         "upstreamUrl": "Upstream URL",

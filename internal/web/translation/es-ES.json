@@ -513,6 +513,8 @@
         "visionTestseed": "Vision testseed",
         "version": "Versión",
         "udpIdleTimeout": "UDP idle timeout (s)",
+        "manageHy2HopPorts": "Gestionar el reenvío UDP automáticamente",
+        "manageHy2HopPortsHint": "3x-ui restaura el reenvío de los puertos de salto al iniciarse. Requiere nftables en el nodo Linux.",
         "masquerade": "Masquerade",
         "type": "Tipo",
         "upstreamUrl": "URL Upstream",

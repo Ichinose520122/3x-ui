@@ -49,15 +49,14 @@ export type QuicCongestion = z.infer<typeof QuicCongestionSchema>;
 export const BbrProfileSchema = z.enum(['conservative', 'standard', 'aggressive']);
 export type BbrProfile = z.infer<typeof BbrProfileSchema>;
 
-// udpHop declares the hop range advertised to clients as `mport`. xray-core
-// 26.9.9 moved actual hopping to the 'udphop' UDP mask and ignores this key,
-// which was always inert server-side. preprocess coerces legacy DB rows
-// where interval was stored as a number (UI bug — see B19 in commit history).
+// Xray ignores udpHop on listeners. The panel uses it for mport and optional server forwarding.
+// Coerce older DB rows that stored the interval as a number.
 const StringRangeSchema = z.preprocess((v) => (typeof v === 'number' ? String(v) : v), z.string());
 
 export const QuicUdpHopSchema = z.object({
   ports: StringRangeSchema.default('20000-50000'),
   interval: StringRangeSchema.default('5-10'),
+  manageServerPorts: z.boolean().optional(),
 });
 export type QuicUdpHop = z.infer<typeof QuicUdpHopSchema>;
 

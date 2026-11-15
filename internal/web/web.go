@@ -134,6 +134,7 @@ type Server struct {
 	bus                  *eventbus.Bus
 	cron                 *cron.Cron
 	discordNotifyEntryID cron.EntryID
+	hysteriaHopJob       *job.HysteriaHopJob
 
 	ctx    context.Context
 	cancel context.CancelFunc
@@ -306,6 +307,7 @@ const (
 	cadenceMtproto       = "@every 10s"
 	cadenceAmneziaWG     = "@every 10s"
 	cadenceTuic          = "@every 10s"
+	cadenceHysteriaHop   = "@every 5s"
 	cadenceClientIPScan  = "@every 10s"
 	cadenceNodeHeartbeat = "@every 5s"
 	cadenceNodeTraffic   = "@every 5s"
@@ -355,6 +357,11 @@ func (s *Server) startTask(restartXray bool, loc *time.Location) {
 	tuicJob := job.NewTuicJob()
 	_, _ = s.cron.AddJob(cadenceTuic, tuicJob)
 	go tuicJob.Run()
+
+	if s.hysteriaHopJob != nil {
+		_, _ = s.cron.AddFunc(cadenceHysteriaHop, s.hysteriaHopJob.Request)
+		s.hysteriaHopJob.Request()
+	}
 
 	// check client ips from log file every 10 sec
 	_, _ = s.cron.AddJob(cadenceClientIPScan, job.NewCheckClientIpJob())
@@ -550,15 +557,17 @@ func (s *Server) start(restartXray bool, startTgBot bool) (err error) {
 		),
 	)
 	s.cron.Start()
+	s.hysteriaHopJob = job.NewHysteriaHopJob(s.ctx)
 
 	// Wire the inbound-runtime manager once so InboundService can route
 	// add/update/delete to either the local xray or a remote node panel.
 	// The closures bridge into XrayService (which owns the running xray
 	// process state) without forcing the runtime package to import service.
 	mgr := runtime.NewManager(runtime.LocalDeps{
-		APIPort:          func() int { return s.xrayService.GetXrayAPIPort() },
-		SetNeedRestart:   func() { s.xrayService.SetToNeedRestart() },
-		RequestReconcile: func() { s.xrayService.SetToNeedReconcile() },
+		APIPort:                func() int { return s.xrayService.GetXrayAPIPort() },
+		SetNeedRestart:         func() { s.xrayService.SetToNeedRestart() },
+		RequestReconcile:       func() { s.xrayService.SetToNeedReconcile() },
+		RequestHysteriaHopSync: s.hysteriaHopJob.Request,
 	})
 	runtime.SetManager(mgr)
 	mgr.SetNodeEgressResolver(&s.settingService)
@@ -795,6 +804,13 @@ func (s *Server) stop(stopXray bool, stopTgBot bool) error {
 	}
 	if s.cron != nil {
 		<-s.cron.Stop().Done()
+	}
+	if s.hysteriaHopJob != nil {
+		hopCtx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+		if err := s.hysteriaHopJob.Stop(hopCtx, stopXray); err != nil {
+			logger.Warning("stop HY2 port forwarding job: ", err)
+		}
+		cancel()
 	}
 	if stopXray {
 		tuic.GetManager().StopAll()

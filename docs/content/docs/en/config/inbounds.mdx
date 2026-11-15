@@ -73,6 +73,20 @@ The inbound editor accepts these protocols:
   share links for it.
 </Callout>
 
+## Hysteria2 port hopping
+
+Edit a Hysteria2 inbound and enter **Hop Ports** under **FinalMask → QUIC Params → UDP Hop**, for example `20000-20100,20200`. Enable **Manage UDP forwarding automatically** and save. The node forwards those UDP ports to the inbound's listen port and restores the rules from the saved settings at startup. Changing the range, turning off the switch, disabling the inbound, or deleting it updates the rules. The switch is off by default.
+
+The node needs Linux with nftables NAT and socket matching support, the `nft` command, and `CAP_NET_ADMIN` for 3x-ui. On Debian 12 and later, install `nft` with `sudo apt install nftables`. In a multi-node deployment, upgrade both the main panel and the node that serves the inbound to a version that supports this option.
+
+In Docker bridge mode, publish the listen port and hop range as UDP. Allow these UDP ports in the cloud firewall or security group. Reserve the hop range for this inbound and retire any manual forwarding scripts or services covering that range before enabling the switch.
+
+Inspect the managed rules and counters with the following command.
+
+```sh
+sudo nft list table inet xui_hy2_hop
+```
+
 ## Fallbacks — multiple protocols on one port
 
 Fallbacks let a single TLS port (e.g. `443`) serve more than one protocol — for

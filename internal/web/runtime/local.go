@@ -22,9 +22,10 @@ import (
 )
 
 type LocalDeps struct {
-	APIPort          func() int
-	SetNeedRestart   func()
-	RequestReconcile func()
+	APIPort                func() int
+	SetNeedRestart         func()
+	RequestReconcile       func()
+	RequestHysteriaHopSync func()
 }
 
 type Local struct {
@@ -65,6 +66,7 @@ func (l *Local) withAPI(fn func(api *xray.XrayAPI) error) error {
 }
 
 func (l *Local) AddInbound(_ context.Context, ib *model.Inbound) error {
+	defer l.RequestHysteriaHopSync(ib)
 	if ib.Protocol == model.MTProto {
 		inst, ok := mtproto.InstanceFromInbound(ib)
 		if !ok {
@@ -109,6 +111,7 @@ func (l *Local) AddInbound(_ context.Context, ib *model.Inbound) error {
 }
 
 func (l *Local) DelInbound(_ context.Context, ib *model.Inbound) error {
+	defer l.RequestHysteriaHopSync(ib)
 	if ib.Protocol == model.MTProto {
 		mtproto.GetManager().Remove(ib.Id)
 		return nil
@@ -133,6 +136,12 @@ func (l *Local) DelInbound(_ context.Context, ib *model.Inbound) error {
 	return l.withAPI(func(api *xray.XrayAPI) error {
 		return api.DelInbound(ib.Tag)
 	})
+}
+
+func (l *Local) RequestHysteriaHopSync(ib *model.Inbound) {
+	if ib.Protocol == model.Hysteria && l.deps.RequestHysteriaHopSync != nil {
+		l.deps.RequestHysteriaHopSync()
+	}
 }
 
 func (l *Local) UpdateInbound(ctx context.Context, oldIb, newIb *model.Inbound) error {

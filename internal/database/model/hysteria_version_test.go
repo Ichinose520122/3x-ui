@@ -149,3 +149,16 @@ func TestGenXrayInboundConfigLeavesOtherProtocolsAlone(t *testing.T) {
 		t.Fatalf("a non-hysteria inbound must not gain a version key, got %#v", got)
 	}
 }
+
+func TestGenXrayInboundConfigKeepsHysteriaHopSettingsOutOfListener(t *testing.T) {
+	in := Inbound{
+		Protocol:       Hysteria,
+		StreamSettings: `{"network":"hysteria","finalmask":{"quicParams":{"congestion":"bbr","udpHop":{"ports":"20000-20100"}}}}`,
+	}
+	before := in.GenXrayInboundConfig().StreamSettings
+	in.StreamSettings = strings.Replace(in.StreamSettings, `"ports":"20000-20100"`, `"ports":"21000-21100","manageServerPorts":true`, 1)
+	after := in.GenXrayInboundConfig().StreamSettings
+	if string(before) != string(after) || strings.Contains(string(after), "udpHop") || !strings.Contains(string(after), `"congestion": "bbr"`) {
+		t.Fatalf("the hop edit should leave the Xray listener config intact: before=%s, after=%s", before, after)
+	}
+}

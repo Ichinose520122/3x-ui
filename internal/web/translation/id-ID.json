@@ -513,6 +513,8 @@
         "visionTestseed": "Vision testseed",
         "version": "Versi",
         "udpIdleTimeout": "UDP idle timeout (d)",
+        "manageHy2HopPorts": "Kelola penerusan UDP secara otomatis",
+        "manageHy2HopPortsHint": "3x-ui memulihkan aturan penerusan port hopping saat mulai. nftables diperlukan pada node Linux.",
         "masquerade": "Masquerade",
         "type": "Tipe",
         "upstreamUrl": "URL Upstream",

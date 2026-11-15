@@ -513,6 +513,8 @@
         "visionTestseed": "Vision testseed",
         "version": "الإصدار",
         "udpIdleTimeout": "UDP idle timeout (ثانية)",
+        "manageHy2HopPorts": "إدارة إعادة توجيه UDP تلقائيًا",
+        "manageHy2HopPortsHint": "يستعيد 3x-ui قواعد إعادة توجيه منافذ القفز عند بدء التشغيل. يلزم تثبيت nftables على عقدة Linux.",
         "masquerade": "Masquerade",
         "type": "النوع",
         "upstreamUrl": "Upstream URL",

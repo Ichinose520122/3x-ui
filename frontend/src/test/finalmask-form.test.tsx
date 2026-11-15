@@ -1,5 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { fireEvent, screen, waitFor } from '@testing-library/react';
+import i18n from 'i18next';
 
 import { FinalMaskField } from '@/lib/xray/forms/fields';
 
@@ -44,6 +45,48 @@ describe('FinalMaskForm filter mask', () => {
       <FinalMaskField network="tcp" protocol="vless" side="server" value={value} />,
     );
     expect(listSelectOptions('finalmask_tcp_0_type')).toContain('Filter (source IPs)');
+  });
+});
+
+describe('FinalMaskForm automatic UDP forwarding', () => {
+  it('saves the opt-in alongside the existing Hysteria2 hop ports', async () => {
+    const onChange = vi.fn();
+    const value = {
+      tcp: [],
+      udp: [],
+      quicParams: {
+        congestion: 'bbr' as const,
+        udpHop: { ports: '20000-20100', interval: '5-10' },
+      },
+    };
+    const label = i18n.t('pages.inbounds.form.manageHy2HopPorts');
+    const client = renderWithProviders(
+      <FinalMaskField network="hysteria" protocol="hysteria" side="client" value={value} />,
+    );
+    expect(screen.queryByLabelText(label)).toBeNull();
+    client.unmount();
+
+    renderWithProviders(
+      <FinalMaskField
+        network="hysteria"
+        protocol="hysteria"
+        side="server"
+        value={value}
+        onChange={onChange}
+      />,
+    );
+    const toggle = screen.getByRole('switch', { name: label });
+    expect(toggle.getAttribute('aria-checked')).toBe('false');
+    fireEvent.click(toggle);
+    await waitFor(() =>
+      expect(onChange).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          quicParams: expect.objectContaining({
+            udpHop: { ports: '20000-20100', interval: '5-10', manageServerPorts: true },
+          }),
+        }),
+      ),
+    );
   });
 });
 
