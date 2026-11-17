@@ -15,6 +15,7 @@ import (
 const (
 	tableName    = "xui_hy2_hop"
 	tableComment = "3x-ui managed HY2 port hopping"
+	chainName    = "prerouting"
 	missingTable = "No such file or directory"
 )
 
@@ -83,11 +84,17 @@ func (m *Manager) Reconcile(ctx context.Context, forwards []Forward) error {
 		return nil
 	}
 	live, err = m.listTable(ctx)
-	if err == nil && ownedTableHandle(live) == 0 {
+	if err != nil {
+		return err
+	}
+	if ownedTableHandle(live) == 0 {
 		return fmt.Errorf("could not verify ownership of nftables table inet %s", tableName)
 	}
+	if !strings.Contains(live, "\n\tchain "+chainName+" {") || strings.Count(live, " dnat to :") != len(forwards) {
+		return fmt.Errorf("nftables table inet %s is missing HY2 forwarding rules", tableName)
+	}
 	m.liveRules = live
-	return err
+	return nil
 }
 
 func (m *Manager) prepare(ctx context.Context, wanted string) (batch, live string, err error) {
@@ -131,8 +138,9 @@ func renderTable(forwards []Forward) string {
 		return ""
 	}
 	var b strings.Builder
-	fmt.Fprintf(&b, "create table inet %s {\n    comment %q\n", tableName, tableComment)
-	b.WriteString("    chain prerouting {\n        type nat hook prerouting priority dstnat + 1; policy accept;\n")
+	// nftables 1.0.6 drops chains and rules nested inside a create table command.
+	fmt.Fprintf(&b, "create table inet %s { comment %q; }\n", tableName, tableComment)
+	fmt.Fprintf(&b, "add chain inet %s %s { type nat hook prerouting priority dstnat + 1; policy accept; }\n", tableName, chainName)
 	for _, f := range forwards {
 		match := ""
 		switch {
@@ -151,11 +159,10 @@ func renderTable(forwards []Forward) string {
 				ports = append(ports, fmt.Sprintf("%d-%d", r.first, r.last))
 			}
 		}
-		prefix := fmt.Sprintf("        %sudp dport { %s } iifname != \"lo\" fib daddr type local", match, strings.Join(ports, ", "))
+		prefix := fmt.Sprintf("add rule inet %s %s %sudp dport { %s } iifname != \"lo\" fib daddr type local", tableName, chainName, match, strings.Join(ports, ", "))
 		// A bound UDP socket takes priority over hopping, including services outside the panel.
 		fmt.Fprintf(&b, "%s socket mark >= 0 return\n%s counter dnat to :%d\n", prefix, prefix, f.Port)
 	}
-	b.WriteString("    }\n}\n")
 	return b.String()
 }
 

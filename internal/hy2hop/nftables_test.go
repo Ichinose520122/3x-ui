@@ -15,8 +15,10 @@ func TestReconcileRestoresAndRemovesManagedRules(t *testing.T) {
 	}
 	const match = `ip6 daddr 2001:db8::1 udp dport { 20000-20002, 20004 } iifname != "lo" fib daddr type local`
 	const rule = match + ` counter dnat to :443`
-	const table = "table inet xui_hy2_hop { # handle 17\n\tcomment \"3x-ui managed HY2 port hopping\"\n}"
-	var live, lastBatch string
+	const emptyTable = "table inet xui_hy2_hop { # handle 17\n\tcomment \"3x-ui managed HY2 port hopping\"\n}"
+	const table = "table inet xui_hy2_hop { # handle 17\n\tcomment \"3x-ui managed HY2 port hopping\"\n\tchain prerouting { # handle 18\n\t\t" + rule + " # handle 19\n\t}\n}"
+	live := emptyTable
+	var lastBatch string
 	var writes int
 	manager := &Manager{run: func(_ context.Context, stdin string, args ...string) (string, error) {
 		if args[0] == "-s" {
@@ -27,7 +29,7 @@ func TestReconcileRestoresAndRemovesManagedRules(t *testing.T) {
 		}
 		writes++
 		lastBatch = stdin
-		if strings.Contains(stdin, "create table inet "+tableName+" {\n") {
+		if strings.Contains(stdin, "create table inet "+tableName+" {") {
 			live = table
 		} else if stdin == "delete table inet handle 17\n" {
 			live = ""
@@ -39,6 +41,13 @@ func TestReconcileRestoresAndRemovesManagedRules(t *testing.T) {
 	ctx := t.Context()
 	if err := manager.Reconcile(ctx, []Forward{forward}); err != nil || !strings.Contains(lastBatch, rule) || writes != 1 {
 		t.Fatalf("first apply: batch=%q writes=%d err=%v", lastBatch, writes, err)
+	}
+	const setup = "delete table inet handle 17\n" +
+		"create table inet xui_hy2_hop { comment \"3x-ui managed HY2 port hopping\"; }\n" +
+		"add chain inet xui_hy2_hop prerouting { type nat hook prerouting priority dstnat + 1; policy accept; }\n" +
+		"add rule inet xui_hy2_hop prerouting "
+	if !strings.HasPrefix(lastBatch, setup) {
+		t.Fatalf("expected explicit table, chain and rule commands in one batch: %s", lastBatch)
 	}
 	if guard := strings.Index(lastBatch, match+` socket mark >= 0 return`); guard < 0 || guard > strings.Index(lastBatch, rule) {
 		t.Fatalf("existing UDP sockets should be checked before NAT: %s", lastBatch)
@@ -60,6 +69,33 @@ func TestReconcileRestoresAndRemovesManagedRules(t *testing.T) {
 	}
 	if err := manager.Reconcile(ctx, nil); err != nil || live != "" || writes != 4 {
 		t.Fatalf("disabled inbound should remove its rules: table=%q writes=%d err=%v", live, writes, err)
+	}
+}
+
+func TestReconcileRetriesWhenNFTInstallsOnlyTheTable(t *testing.T) {
+	forward, _, err := FromStreamSettings("", 443, managedStream("20000-20002"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	const empty = "table inet xui_hy2_hop { # handle 17\n\tcomment \"3x-ui managed HY2 port hopping\"\n}"
+	const chain = "table inet xui_hy2_hop { # handle 17\n\tcomment \"3x-ui managed HY2 port hopping\"\n\tchain prerouting { # handle 18\n\t}\n}"
+	live := empty
+	writes := 0
+	manager := &Manager{run: func(_ context.Context, stdin string, args ...string) (string, error) {
+		if args[0] == "-s" {
+			return live, nil
+		}
+		writes++
+		return "", nil
+	}}
+	for _, state := range []string{empty, empty, chain} {
+		live = state
+		if err := manager.Reconcile(t.Context(), []Forward{forward}); err == nil || !strings.Contains(err.Error(), "missing HY2 forwarding rules") {
+			t.Fatalf("reconciliation accepted incomplete rules: %s", state)
+		}
+	}
+	if writes != 3 {
+		t.Fatalf("wanted a retry after an incomplete installation, got %d batches", writes)
 	}
 }
 
